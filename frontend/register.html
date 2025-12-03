@@ -17,39 +17,40 @@
 <p id="error-message"></p>
 
 <script>
-    const form = document.getElementById('registerForm');
+const form = document.getElementById('registerForm');
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
 
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+    const successMessage = document.getElementById('success-message');
+    const errorMessage = document.getElementById('error-message');
 
-        const successMsg = document.getElementById('success-message');
-        const errorMsg = document.getElementById('error-message');
+    successMessage.textContent = '';
+    errorMessage.textContent = '';
 
-        successMsg.textContent = "";
-        errorMsg.textContent = "";
+    try {
+        const res = await fetch('http://127.0.0.1:8000/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
 
-        try {
-            const res = await fetch('http://127.0.0.1:8000/register', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ email, password })
-            });
+        const data = await res.json();
 
-            const data = await res.json().catch(() => ({}));
-
-            if (res.ok && data.access_token) {
-                successMsg.textContent = "registration successful";
-            } else {
-                errorMsg.textContent = "error during registration";
-            }
-
-        } catch (err) {
-            errorMsg.textContent = "error during registration";
+        if (res.ok && data.access_token) {
+            localStorage.setItem('token', data.access_token);
+            successMessage.textContent = data.message ?? 'Registration successful!';
+        } else if (data.detail) {
+            errorMessage.textContent = data.detail;
+        } else {
+            errorMessage.textContent = 'Error during registration';
         }
-    });
+    } catch (err) {
+        errorMessage.textContent = 'Network error';
+    }
+});
 </script>
 </body>
 </html>
