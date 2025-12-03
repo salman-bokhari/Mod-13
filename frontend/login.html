@@ -5,48 +5,51 @@
     <title>Login</title>
 </head>
 <body>
-    <h2>Login</h2>
-    <form id="loginForm">
-        <input type="email" id="email" name="email" placeholder="Email" required>
-        <input type="password" id="password" name="password" placeholder="Password" required>
-        <button type="submit">Login</button>
-    </form>
-    <p id="login-success"></p>
-    <p id="error-message"></p>
+<h2>Login</h2>
 
-    <script>
-        const form = document.getElementById('loginForm');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+<form id="loginForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+</form>
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+<p id="login-success"></p>
+<p id="error-message"></p>
 
-            const successMessage = document.getElementById('login-success');
-            const errorMessage = document.getElementById('error-message');
+<script>
+    const form = document.getElementById('loginForm');
 
-            successMessage.textContent = '';
-            errorMessage.textContent = '';
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-            try {
-                const res = await fetch('http://127.0.0.1:8000/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
 
-                const data = await res.json();
+        const successMsg = document.getElementById('login-success');
+        const errorMsg = document.getElementById('error-message');
 
-                if (res.ok && data.access_token) {
-                    localStorage.setItem('token', data.access_token);
-                    successMessage.textContent = data.message || 'Login successful!';
-                } else {
-                    errorMessage.textContent = data.detail || 'Invalid credentials';
-                }
-            } catch (err) {
-                errorMessage.textContent = 'Network error';
+        successMsg.textContent = "";
+        errorMsg.textContent = "";
+
+        try {
+            const res = await fetch('http://127.0.0.1:8000/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json().catch(() => ({}));
+
+            if (res.ok && data.access_token) {
+                successMsg.textContent = "login successful";
+            } else {
+                errorMsg.textContent = "invalid credentials";
             }
-        });
-    </script>
+
+        } catch (err) {
+            errorMsg.textContent = "invalid credentials";
+        }
+    });
+</script>
 </body>
 </html>
