@@ -8,7 +8,9 @@ from backend.app import database
 
 app = FastAPI(title="JWT Auth Example")
 
+# ------------------------
 # CORS
+# ------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,23 +19,39 @@ app.add_middleware(
     allow_credentials=True,
 )
 
+# ------------------------
 # DB startup
+# ------------------------
 @app.on_event("startup")
 def on_startup():
     database.init_db()
 
+# ------------------------
 # Health check
+# ------------------------
 @app.api_route("/health", methods=["GET", "HEAD"])
 def health():
     return {"status": "ok"}
 
-
-# Include API router **before** static files
+# ------------------------
+# API routers
+# ------------------------
 app.include_router(auth_router.router)
 
-# Serve frontend
-ROOT = Path(__file__).resolve().parents[2]
-FRONTEND_DIR = ROOT / "frontend"
+# ------------------------
+# Serve frontend correctly
+# ------------------------
+# backend/app/main.py → parents[1] = backend/
+#                      → parents[2] = project root
+ROOT_DIR = Path(__file__).resolve().parents[2]
+FRONTEND_DIR = ROOT_DIR / "frontend"
 
 if FRONTEND_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
+    # Mount frontend as /frontend
+    app.mount(
+        "/frontend",
+        StaticFiles(directory=str(FRONTEND_DIR), html=True),
+        name="frontend"
+    )
+else:
+    print("⚠️ Frontend directory NOT found:", FRONTEND_DIR)

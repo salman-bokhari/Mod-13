@@ -91,6 +91,19 @@ jobs:
           exit 1
         fi
 
+    - name: Wait for API
+      run: |
+        for i in {1..20}; do
+          if curl -s http://localhost:8000; then
+            echo "API is up"
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "API failed to start"
+        exit 1
+    
+  
     - name: List frontend files
       working-directory: frontend
       run: ls -R
