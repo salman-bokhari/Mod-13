@@ -6,7 +6,7 @@ test.describe('JWT Auth E2E Tests', () => {
   const testUser = { email: 'testuser@example.com', password: 'Password123' };
 
   test('Register user successfully', async ({ page }) => {
-    await page.goto(`${BASE_URL}/register.html`);
+    await page.goto(`${BASE_URL}/frontend/register.html`);
     await page.fill('input[name="email"]', testUser.email);
     await page.fill('input[name="password"]', testUser.password);
     await page.click('button[type="submit"]');
@@ -15,7 +15,7 @@ test.describe('JWT Auth E2E Tests', () => {
   });
 
   test('Login with correct credentials', async ({ page }) => {
-    await page.goto(`${BASE_URL}/login.html`);
+    await page.goto(`${BASE_URL}/frontend/login.html`);
     await page.fill('input[name="email"]', testUser.email);
     await page.fill('input[name="password"]', testUser.password);
     await page.click('button[type="submit"]');
@@ -24,7 +24,7 @@ test.describe('JWT Auth E2E Tests', () => {
   });
 
   test('Register with short password shows error', async ({ page }) => {
-    await page.goto(`${BASE_URL}/register.html`);
+    await page.goto(`${BASE_URL}/frontend/register.html`);
     await page.fill('input[name="email"]', 'shortpass@example.com');
     await page.fill('input[name="password"]', '123');
     await page.click('button[type="submit"]');
@@ -33,7 +33,7 @@ test.describe('JWT Auth E2E Tests', () => {
   });
 
   test('Login with wrong password shows error', async ({ page }) => {
-    await page.goto(`${BASE_URL}/login.html`);
+    await page.goto(`${BASE_URL}/frontend/login.html`);
     await page.fill('input[name="email"]', testUser.email);
     await page.fill('input[name="password"]', 'wrongpass');
     await page.click('button[type="submit"]');
