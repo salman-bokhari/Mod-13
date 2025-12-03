@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+</head>
+<body>
+    <h2>Register</h2>
+    <form id="registerForm">
+        <input type="email" id="email" name="email" placeholder="Email" required>
+        <input type="password" id="password" name="password" placeholder="Password" minlength="12" required>
+        <button type="submit">Register</button>
+    </form>
+    <p id="success-message"></p>
+    <p id="error-message"></p>
+
+    <script>
+        const form = document.getElementById('registerForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const successMessage = document.getElementById('success-message');
+            const errorMessage = document.getElementById('error-message');
+
+            successMessage.textContent = '';
+            errorMessage.textContent = '';
+
+            try {
+                const res = await fetch('http://localhost:8000/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.access_token) {
+                    localStorage.setItem('token', data.access_token);
+                    successMessage.textContent = data.message || 'Registration successful!';
+                } else {
+                    errorMessage.textContent = data.detail || 'Error during registration';
+                }
+            } catch (err) {
+                errorMessage.textContent = 'Network error';
+            }
+        });
+    </script>
+</body>
+</html>
