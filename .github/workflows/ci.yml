@@ -62,16 +62,16 @@ jobs:
         echo "Waiting for backend to be ready..."
         npx wait-on http://localhost:8000/health
 
-    # - name: Reset database schema
-      # working-directory: backend
-      # run: |
-        # python - << 'EOF'
-        # from backend.app.database import Base, engine
-        # import backend.app.models.user
-        # Base.metadata.drop_all(bind=engine)
-        # Base.metadata.create_all(bind=engine)
-        # print("Database reset complete")
-        # EOF
+    - name: Reset database schema
+      working-directory: backend
+      run: |
+        python - << 'EOF'
+        from backend.app.database import Base, engine
+        import backend.app.models.user
+        Base.metadata.drop_all(bind=engine)
+        Base.metadata.create_all(bind=engine)
+        print("Database reset complete")
+        EOF
 
 
     - name: Wait for backend
