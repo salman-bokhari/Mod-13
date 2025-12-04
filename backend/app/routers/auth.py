@@ -19,6 +19,27 @@ def get_db():
     finally:
         db.close()
 
+
+# -----------------------
+# Custom handler for validation errors
+# -----------------------
+@router.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # Convert validation errors into a readable string
+    errors = []
+    for err in exc.errors():
+        loc = ".".join(str(l) for l in err.get("loc", []))
+        msg = err.get("msg", "")
+        errors.append(f"{loc}: {msg}")
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": ", ".join(errors)}
+    )
+
+
+# -----------------------
+# Register endpoint
+# -----------------------
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
     if not hasattr(user_in, 'username') or not user_in.username:
@@ -37,6 +58,10 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     token = jwt_handler.create_access_token({"sub": str(user.id), "email": user.email})
     return {"access_token": token, "token_type": "bearer", "message": "Registration successful"}
 
+
+# -----------------------
+# Login endpoint
+# -----------------------
 @router.post("/login", response_model=Token)
 def login(user_in: UserCreate, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == user_in.email).first()
