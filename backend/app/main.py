@@ -45,12 +45,14 @@ app.include_router(auth_router.router)
 # ------------------------
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc: RequestValidationError):
-    # Always return JSON with 'detail' key
+    # Convert Pydantic errors to a single string
+    errors = exc.errors()
+    messages = [f"{e['loc'][-1]}: {e['msg']}" for e in errors]
     return JSONResponse(
         status_code=422,
-        content={"detail": exc.errors()},
+        content={"detail": "; ".join(messages)}
     )
-
+    
 # ------------------------
 # Serve frontend correctly
 # ------------------------
