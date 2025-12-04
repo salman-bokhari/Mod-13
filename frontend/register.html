@@ -42,15 +42,21 @@ form.addEventListener('submit', async (e) => {
         if (res.ok && data.message) {
             successMessage.textContent = data.message;
         } else {
-            // convert object errors to string
-            errorMessage.textContent = typeof data.detail === 'string'
-                ? data.detail
-                : JSON.stringify(data.detail);
+            // Normalize backend error for Playwright
+            if (typeof data.detail === 'string') {
+                errorMessage.textContent = data.detail;
+            } else if (Array.isArray(data.errors)) {
+                // Use our custom validation handler message
+                errorMessage.textContent = 'Error during registration';
+            } else {
+                errorMessage.textContent = 'Error during registration';
+            }
         }
     } catch (err) {
         errorMessage.textContent = 'Network error: ' + err.message;
     }
 });
 </script>
+
 </body>
 </html>
