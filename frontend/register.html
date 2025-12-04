@@ -39,17 +39,17 @@ form.addEventListener('submit', async (e) => {
 
         const data = await res.json();
 
-        if (res.ok && data.message) {
-            successMessage.textContent = data.message; // "Registration successful"
-        } else {
-            errorMessage.textContent = "Error during registration"; // normalize for Playwright
+        if (data.message) {
+            if (res.ok) {
+                successMessage.textContent = data.message; // "Registration successful"
+            } else {
+                errorMessage.textContent = data.message;   // e.g., "Email already registered"
+            }
         }
     } catch (err) {
         errorMessage.textContent = 'Network error: ' + err.message;
     }
 });
 </script>
-
-
 </body>
 </html>

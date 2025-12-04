@@ -39,19 +39,17 @@ form.addEventListener('submit', async (e) => {
 
         const data = await res.json();
 
-        if (res.ok && data.message) {
-            successMessage.textContent = data.message; // "Login successful"
-        } else if (data.detail === "Invalid credentials") {
-            errorMessage.textContent = "Invalid credentials";
-        } else {
-            errorMessage.textContent = "Invalid credentials"; // fallback
+        if (data.message) {
+            if (res.ok) {
+                successMessage.textContent = data.message; // e.g., "Login successful"
+            } else {
+                errorMessage.textContent = data.message;   // e.g., "Invalid credentials"
+            }
         }
     } catch (err) {
         errorMessage.textContent = 'Network error: ' + err.message;
     }
 });
 </script>
-
-
 </body>
 </html>

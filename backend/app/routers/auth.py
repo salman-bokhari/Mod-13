@@ -1,8 +1,64 @@
+# # backend/app/routers/auth.py
+
+# from fastapi import APIRouter, Depends, HTTPException, status, Request
+# from fastapi.responses import JSONResponse
+# from fastapi.exceptions import RequestValidationError
+# from sqlalchemy.orm import Session
+# from backend.app import database
+# from backend.app.schemas.user import UserCreate, Token
+# from backend.app.models.user import User
+# from backend.app.utils import hash as hash_utils
+# from backend.app.utils import jwt_handler
+
+# router = APIRouter(tags=["auth"])
+
+# def get_db():
+#     db = database.SessionLocal()
+#     try:
+#         yield db
+#     finally:
+#         db.close()
+# # -----------------------
+# # Register endpoint
+# # -----------------------
+
+# @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
+# def register(user_in: UserCreate, db: Session = Depends(get_db)):
+#     if not hasattr(user_in, 'username') or not user_in.username:
+#         user_in.username = user_in.email.split("@")[0]
+
+#     existing = db.query(User).filter(User.email == user_in.email).first()
+#     if existing:
+#         raise HTTPException(status_code=400, detail="Email already registered")
+
+#     hashed = hash_utils.get_password_hash(user_in.password)
+#     user = User(email=user_in.email, username=user_in.username, hashed_password=hashed)
+#     db.add(user)
+#     db.commit()
+#     db.refresh(user)
+
+#     token = jwt_handler.create_access_token({"sub": str(user.id), "email": user.email})
+#     return {"access_token": token, "token_type": "bearer", "message": "Registration successful"}
+
+
+# # -----------------------
+# # Login endpoint
+# # -----------------------
+# @router.post("/login", response_model=Token)
+# def login(user_in: UserCreate, db: Session = Depends(get_db)):
+#     user = db.query(User).filter(User.email == user_in.email).first()
+#     if not user or not hash_utils.verify_password(user_in.password, user.hashed_password):
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED,
+#             detail="Invalid credentials"
+#         )
+
+#     token = jwt_handler.create_access_token({"sub": str(user.id), "email": user.email})
+#     return {"access_token": token, "token_type": "bearer", "message": "Login successful"}
 # backend/app/routers/auth.py
 
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
 from sqlalchemy.orm import Session
 from backend.app import database
 from backend.app.schemas.user import UserCreate, Token
@@ -18,10 +74,11 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
 # -----------------------
 # Register endpoint
 # -----------------------
-
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
     if not hasattr(user_in, 'username') or not user_in.username:
@@ -29,7 +86,10 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
 
     existing = db.query(User).filter(User.email == user_in.email).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Email already registered"}
+        )
 
     hashed = hash_utils.get_password_hash(user_in.password)
     user = User(email=user_in.email, username=user_in.username, hashed_password=hashed)
@@ -38,7 +98,10 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     db.refresh(user)
 
     token = jwt_handler.create_access_token({"sub": str(user.id), "email": user.email})
-    return {"access_token": token, "token_type": "bearer", "message": "Registration successful"}
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content={"access_token": token, "token_type": "bearer", "message": "Registration successful"}
+    )
 
 
 # -----------------------
@@ -48,10 +111,13 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
 def login(user_in: UserCreate, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == user_in.email).first()
     if not user or not hash_utils.verify_password(user_in.password, user.hashed_password):
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
+            content={"message": "Invalid credentials"}
         )
 
     token = jwt_handler.create_access_token({"sub": str(user.id), "email": user.email})
-    return {"access_token": token, "token_type": "bearer", "message": "Login successful"}
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"access_token": token, "token_type": "bearer", "message": "Login successful"}
+    )
