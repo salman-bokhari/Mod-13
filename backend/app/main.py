@@ -65,8 +65,9 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 FRONTEND_DIR = ROOT_DIR / "frontend"
 
 if FRONTEND_DIR.exists():
+    # Serve frontend at root so fetch('/register') works correctly
     app.mount(
-        "/frontend",
+        "/",
         StaticFiles(directory=str(FRONTEND_DIR), html=True),
         name="frontend"
     )
