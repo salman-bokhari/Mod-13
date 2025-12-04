@@ -31,7 +31,7 @@ form.addEventListener('submit', async (e) => {
     errorMessage.textContent = '';
 
     try {
-        const res = await fetch('http://127.0.0.1:8000/register', {
+        const res = await fetch('/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -39,18 +39,16 @@ form.addEventListener('submit', async (e) => {
 
         const data = await res.json();
 
-        if (res.ok && data.access_token) {
-            localStorage.setItem('token', data.access_token);
-            successMessage.textContent = data.message ?? 'Registration successful!';
-        } else if (data.detail) {
-            errorMessage.textContent = data.detail;
+        if (res.ok) {
+            successMessage.textContent = data.message ?? 'Registration successful';
         } else {
-            errorMessage.textContent = 'Error during registration';
+            errorMessage.textContent = data.detail ?? 'Error during registration';
         }
     } catch (err) {
         errorMessage.textContent = 'Network error';
     }
 });
 </script>
+
 </body>
 </html>
