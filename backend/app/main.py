@@ -43,18 +43,20 @@ app.include_router(auth_router.router)
 # ------------------------
 # Exception handlers
 # ------------------------
-app.exception_handler(RequestValidationError)
+@app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc: RequestValidationError):
-    # Combine all errors into a single message
+    # Combine all errors into a single string message
     messages = []
     for e in exc.errors():
         loc = ".".join(str(x) for x in e['loc'] if isinstance(x, str))
         msg = e['msg']
         messages.append(f"{loc}: {msg}")
+    # Return a single 'detail' that Playwright expects
     return JSONResponse(
         status_code=400,
         content={"detail": "Error during registration", "errors": messages}
     )
+
     
 # ------------------------
 # Serve frontend correctly
