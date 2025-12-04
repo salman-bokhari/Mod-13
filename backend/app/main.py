@@ -43,14 +43,17 @@ app.include_router(auth_router.router)
 # ------------------------
 # Exception handlers
 # ------------------------
-@app.exception_handler(RequestValidationError)
+app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc: RequestValidationError):
-    # Convert Pydantic errors to a single string
-    errors = exc.errors()
-    messages = [f"{e['loc'][-1]}: {e['msg']}" for e in errors]
+    # Combine all errors into a single message
+    messages = []
+    for e in exc.errors():
+        loc = ".".join(str(x) for x in e['loc'] if isinstance(x, str))
+        msg = e['msg']
+        messages.append(f"{loc}: {msg}")
     return JSONResponse(
-        status_code=422,
-        content={"detail": "; ".join(messages)}
+        status_code=400,
+        content={"detail": "Error during registration", "errors": messages}
     )
     
 # ------------------------

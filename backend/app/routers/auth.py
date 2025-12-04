@@ -21,6 +21,7 @@ def get_db():
 # -----------------------
 # Register endpoint
 # -----------------------
+
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
     if not hasattr(user_in, 'username') or not user_in.username:
