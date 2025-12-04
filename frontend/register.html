@@ -39,16 +39,18 @@ form.addEventListener('submit', async (e) => {
 
         const data = await res.json();
 
-        if (res.ok) {
-            successMessage.textContent = data.message ?? 'Registration successful';
+        if (res.ok && data.message) {
+            successMessage.textContent = data.message;
         } else {
-            errorMessage.textContent = data.detail ?? 'Error during registration';
+            // convert object errors to string
+            errorMessage.textContent = typeof data.detail === 'string'
+                ? data.detail
+                : JSON.stringify(data.detail);
         }
     } catch (err) {
-        errorMessage.textContent = 'Network error';
+        errorMessage.textContent = 'Network error: ' + err.message;
     }
 });
 </script>
-
 </body>
 </html>
