@@ -18,25 +18,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-# -----------------------
-# Custom handler for validation errors
-# -----------------------
-@router.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    # Convert validation errors into a readable string
-    errors = []
-    for err in exc.errors():
-        loc = ".".join(str(l) for l in err.get("loc", []))
-        msg = err.get("msg", "")
-        errors.append(f"{loc}: {msg}")
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"detail": ", ".join(errors)}
-    )
-
-
 # -----------------------
 # Register endpoint
 # -----------------------
