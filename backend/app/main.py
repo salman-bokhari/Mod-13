@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 from backend.app.routers import auth as auth_router
 from backend.app import database
@@ -39,15 +41,23 @@ def health():
 app.include_router(auth_router.router)
 
 # ------------------------
+# Exception handlers
+# ------------------------
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc: RequestValidationError):
+    # Always return JSON with 'detail' key
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+    )
+
+# ------------------------
 # Serve frontend correctly
 # ------------------------
-# backend/app/main.py → parents[1] = backend/
-#                      → parents[2] = project root
 ROOT_DIR = Path(__file__).resolve().parents[2]
 FRONTEND_DIR = ROOT_DIR / "frontend"
 
 if FRONTEND_DIR.exists():
-    # Mount frontend as /frontend
     app.mount(
         "/frontend",
         StaticFiles(directory=str(FRONTEND_DIR), html=True),

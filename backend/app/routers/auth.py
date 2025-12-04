@@ -19,13 +19,6 @@ def get_db():
     finally:
         db.close()
 
-# Catch Pydantic validation errors and return plain text
-@router.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    # Join all error messages into one string
-    error_messages = "; ".join([err["msg"] for err in exc.errors()])
-    return JSONResponse(status_code=400, content={"detail": error_messages})
-
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
     if not hasattr(user_in, 'username') or not user_in.username:
