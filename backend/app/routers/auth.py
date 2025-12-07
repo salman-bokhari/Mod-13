@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from backend.app.schemas.user import UserCreate, Token
 from backend.app.utils.hash import get_password_hash, verify_password
 from backend.app.utils.jwt_handler import create_access_token
 from backend.app.database import SessionLocal
 from backend.app.models.user import User
+from fastapi.security import OAuth2PasswordBearer
 
 router = APIRouter(tags=["auth"])
 
