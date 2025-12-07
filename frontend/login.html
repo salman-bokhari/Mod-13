@@ -31,37 +31,19 @@ form.addEventListener('submit', async (e) => {
     errorMessage.textContent = '';
 
     try {
-        const res = await fetch('http://localhost:8000/login', {
+        const res = await fetch('/login', { // use relative URL
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
 
-        let data = {};
-        try {
-            data = await res.json();
-        } catch (err) {
-            data = {};
-        }
+        const data = await res.json();
 
         if (res.ok) {
-            // If backend returns token, store it and show the message tests expect
-            if (data.access_token) {
-                try {
-                    localStorage.setItem('access_token', data.access_token);
-                } catch (e) {
-                    // ignore storage errors in CI
-                }
-            }
-            successMessage.textContent = 'Login successful';
+            successMessage.textContent = data.message || 'Login successful';
+            if (data.access_token) localStorage.setItem('access_token', data.access_token);
         } else {
-            // For 401 we set "Invalid credentials" (tests expect this)
-            if (res.status === 401) {
-                errorMessage.textContent = 'Invalid credentials';
-            } else {
-                // Generic mapping for other errors
-                errorMessage.textContent = data.message || data.detail || 'Invalid credentials';
-            }
+            errorMessage.textContent = data.message || 'Invalid credentials';
         }
     } catch (err) {
         errorMessage.textContent = 'Network error: ' + err.message;

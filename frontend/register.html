@@ -31,33 +31,18 @@ form.addEventListener('submit', async (e) => {
     errorMessage.textContent = '';
 
     try {
-        const res = await fetch('http://localhost:8000/register', {
+        const res = await fetch('/register', { // use relative URL
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
 
-        // try parsing JSON safely
-        let data = {};
-        try {
-            data = await res.json();
-        } catch (err) {
-            // non-json response
-            data = {};
-        }
+        const data = await res.json();
 
         if (res.ok) {
-            // Backend might return { "message": "..."} or { "access_token": "..." }
-            // For tests we set the exact text they expect:
-            successMessage.textContent = 'Registration successful';
+            successMessage.textContent = data.message || 'Registration successful';
         } else {
-            // Map various backend error shapes to the message your tests expect
-            // e.g. { message: "..."} or { detail: "..." }
-            const serverMsg = data.message || data.detail || '';
-            // Tests expect "Error during registration"
-            errorMessage.textContent = 'Error during registration';
-            // (optionally log server message to console for debugging)
-            if (serverMsg) console.warn('Register error from server:', serverMsg);
+            errorMessage.textContent = data.message || 'Error during registration';
         }
     } catch (err) {
         errorMessage.textContent = 'Network error: ' + err.message;
