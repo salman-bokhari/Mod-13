@@ -1,8 +1,7 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel
 
 class CalculationBase(BaseModel):
-    operation: str = Field(..., regex="^(add|subtract|multiply|divide)$")
+    operation: str
     operand1: float
     operand2: float
 
@@ -10,13 +9,15 @@ class CalculationCreate(CalculationBase):
     pass
 
 class CalculationUpdate(BaseModel):
-    operation: Optional[str] = Field(None, regex="^(add|subtract|multiply|divide)$")
-    operand1: Optional[float]
-    operand2: Optional[float]
+    operation: str | None = None
+    operand1: float | None = None
+    operand2: float | None = None
+    result: float | None = None
 
-class CalculationOut(CalculationBase):
+class CalculationRead(CalculationBase):
     id: int
     result: float
+    owner_id: int
 
     class Config:
         orm_mode = True
