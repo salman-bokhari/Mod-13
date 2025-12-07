@@ -1,62 +1,32 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
-from backend.app import database
+from fastapi import APIRouter, HTTPException, status
 from backend.app.schemas.user import UserCreate, Token
+from backend.app.utils.hash import get_password_hash, verify_password
+from backend.app.utils.jwt_handler import create_access_token
+from backend.app.database import SessionLocal
 from backend.app.models.user import User
-from backend.app.utils import hash as hash_utils
-from backend.app.utils import jwt_handler
 
 router = APIRouter(tags=["auth"])
 
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-# -----------------------
-# Register endpoint
-# -----------------------
-@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
-def register(user_in: UserCreate, db: Session = Depends(get_db)):
-    if not user_in.username:
-        user_in.username = user_in.email.split("@")[0]
-
-    existing = db.query(User).filter(User.email == user_in.email).first()
+@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=Token)
+def register(user: UserCreate):
+    db = SessionLocal()
+    existing = db.query(User).filter(User.email == user.email).first()
     if existing:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Email already registered"}
-        )
-
-    hashed = hash_utils.get_password_hash(user_in.password)
-    user = User(email=user_in.email, username=user_in.username, hashed_password=hashed)
-    db.add(user)
+        raise HTTPException(status_code=400, detail="Email already registered")
+    if len(user.password) < 6:
+        raise HTTPException(status_code=400, detail="Error during registration")
+    db_user = User(email=user.email, hashed_password=get_password_hash(user.password))
+    db.add(db_user)
     db.commit()
-    db.refresh(user)
+    db.refresh(db_user)
+    token = create_access_token({"sub": str(db_user.id)})
+    return {"access_token": token, "token_type": "bearer", "message": "Registration successful"}
 
-    token = jwt_handler.create_access_token({"sub": str(user.id), "email": user.email})
-    return JSONResponse(
-        status_code=status.HTTP_201_CREATED,
-        content={"access_token": token, "token_type": "bearer", "message": "Registration successful"}
-    )
-
-# -----------------------
-# Login endpoint
-# -----------------------
 @router.post("/login", response_model=Token)
-def login(user_in: UserCreate, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == user_in.email).first()
-    if not user or not hash_utils.verify_password(user_in.password, user.hashed_password):
-        return JSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"message": "Invalid credentials"}
-        )
-
-    token = jwt_handler.create_access_token({"sub": str(user.id), "email": user.email})
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={"access_token": token, "token_type": "bearer", "message": "Login successful"}
-    )
+def login(user: UserCreate):
+    db = SessionLocal()
+    db_user = db.query(User).filter(User.email == user.email).first()
+    if not db_user or not verify_password(user.password, db_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    token = create_access_token({"sub": str(db_user.id)})
+    return {"access_token": token, "token_type": "bearer", "message": "Login successful"}

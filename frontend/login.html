@@ -26,7 +26,6 @@ form.addEventListener('submit', async (e) => {
 
     const successMessage = document.getElementById('login-success');
     const errorMessage = document.getElementById('error-message');
-
     successMessage.textContent = '';
     errorMessage.textContent = '';
 
@@ -36,14 +35,13 @@ form.addEventListener('submit', async (e) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
-
-        const data = await res.json().catch(() => ({}));
+        const data = await res.json();
 
         if (res.ok) {
-            if (data.access_token) localStorage.setItem('access_token', data.access_token);
-            successMessage.textContent = 'Login successful';
+            localStorage.setItem('access_token', data.access_token || '');
+            successMessage.textContent = data.message || 'Login successful';
         } else {
-            errorMessage.textContent = res.status === 401 ? 'Invalid credentials' : (data.message || 'Invalid credentials');
+            errorMessage.textContent = data.detail || data.message || 'Invalid credentials';
         }
     } catch (err) {
         errorMessage.textContent = 'Network error: ' + err.message;

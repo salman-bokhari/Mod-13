@@ -26,7 +26,6 @@ form.addEventListener('submit', async (e) => {
 
     const successMessage = document.getElementById('success-message');
     const errorMessage = document.getElementById('error-message');
-
     successMessage.textContent = '';
     errorMessage.textContent = '';
 
@@ -36,13 +35,12 @@ form.addEventListener('submit', async (e) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
-
-        const data = await res.json().catch(() => ({}));
+        const data = await res.json();
 
         if (res.ok) {
-            successMessage.textContent = 'Registration successful';
+            successMessage.textContent = data.message || 'Registration successful';
         } else {
-            errorMessage.textContent = data.message || 'Error during registration';
+            errorMessage.textContent = data.detail || data.message || 'Error during registration';
         }
     } catch (err) {
         errorMessage.textContent = 'Network error: ' + err.message;

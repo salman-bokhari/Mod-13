@@ -45,7 +45,6 @@ app.include_router(auth_router.router)
 # ------------------------
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc: RequestValidationError):
-    # Map Pydantic validation errors to a single message for Playwright tests
     return JSONResponse(
         status_code=400,
         content={"message": "Error during registration"}
