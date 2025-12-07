@@ -21,8 +21,11 @@ document.getElementById('registerForm').addEventListener('submit', async e => {
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
-    if (res.ok) success.textContent = data.message;
-    else error.textContent = data.detail || data.message;
-  } catch (err) { error.textContent = 'Network error'; }
+    if (res.ok && data.message) success.textContent = data.message;
+    else if (!res.ok && data.detail) error.textContent = data.detail;
+    else error.textContent = data.message || 'Registration failed';
+  } catch (err) {
+    error.textContent = 'Network error';
+  }
 });
 </script>
