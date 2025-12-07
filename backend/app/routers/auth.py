@@ -1,12 +1,15 @@
 from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordBearer
 from backend.app.schemas.user import UserCreate, Token
 from backend.app.utils.hash import get_password_hash, verify_password
-from backend.app.utils.jwt_handler import create_access_token
+from backend.app.utils.jwt_handler import create_access_token, decode_access_token
 from backend.app.database import SessionLocal
 from backend.app.models.user import User
-from fastapi.security import OAuth2PasswordBearer
 
 router = APIRouter(tags=["auth"])
+
+# OAuth2 scheme for dependency injection
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 @router.post("/register", status_code=status.HTTP_201_CREATED, response_model=Token)
 def register(user: UserCreate):
@@ -32,6 +35,7 @@ def login(user: UserCreate):
     token = create_access_token({"sub": str(db_user.id)})
     return {"access_token": token, "token_type": "bearer", "message": "Login successful"}
 
+# Dependency to get current user from JWT token
 def get_current_user(token: str = Depends(oauth2_scheme)):
     payload = decode_access_token(token)
     user_id = payload.get("sub")
