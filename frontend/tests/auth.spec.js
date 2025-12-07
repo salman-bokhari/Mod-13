@@ -1,8 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-const timestamp = Date.now(); // Unique timestamp for test users
-
 test.describe('JWT Auth E2E Tests', () => {
+  const timestamp = Date.now(); // Unique timestamp for test users
   const testUser = { email: `testuser+${timestamp}@example.com`, password: 'Password123' };
   const shortPassUser = { email: `shortpass+${timestamp}@example.com`, password: '123' };
 
@@ -16,13 +15,12 @@ test.describe('JWT Auth E2E Tests', () => {
   });
 
   test('Login with correct credentials', async ({ page }) => {
-    // Make sure user is registered
+    // Ensure user is registered first
     await page.goto(`http://localhost:8000/register.html`);
     await page.fill('input[name="email"]', testUser.email);
     await page.fill('input[name="password"]', testUser.password);
     await page.click('button[type="submit"]');
 
-    // Then login
     await page.goto(`http://localhost:8000/login.html`);
     await page.fill('input[name="email"]', testUser.email);
     await page.fill('input[name="password"]', testUser.password);
@@ -41,6 +39,7 @@ test.describe('JWT Auth E2E Tests', () => {
   });
 
   test('Login with wrong password shows error', async ({ page }) => {
+    // Ensure user is registered first
     await page.goto(`http://localhost:8000/register.html`);
     await page.fill('input[name="email"]', testUser.email);
     await page.fill('input[name="password"]', testUser.password);

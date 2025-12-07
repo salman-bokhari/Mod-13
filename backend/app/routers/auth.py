@@ -16,7 +16,6 @@ def get_db():
     finally:
         db.close()
 
-
 # -----------------------
 # Register endpoint
 # -----------------------
@@ -50,7 +49,6 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
         status_code=status.HTTP_201_CREATED,
         content={"access_token": token, "token_type": "bearer", "message": "Registration successful"}
     )
-
 
 # -----------------------
 # Login endpoint
