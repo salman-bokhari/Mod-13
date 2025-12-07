@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+<h2>Login</h2>
+
+<form id="loginForm">
+    <input type="email" id="email" name="email" placeholder="Email" required>
+    <input type="password" id="password" name="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+</form>
+
+<p id="login-success"></p>
+<p id="error-message"></p>
+
+<script>
+const form = document.getElementById('loginForm');
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    const successMessage = document.getElementById('login-success');
+    const errorMessage = document.getElementById('error-message');
+
+    successMessage.textContent = '';
+    errorMessage.textContent = '';
+
+    try {
+        const res = await fetch('http://localhost:8000/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        let data = {};
+        try {
+            data = await res.json();
+        } catch (err) {
+            data = {};
+        }
+
+        if (res.ok) {
+            // If backend returns token, store it and show the message tests expect
+            if (data.access_token) {
+                try {
+                    localStorage.setItem('access_token', data.access_token);
+                } catch (e) {
+                    // ignore storage errors in CI
+                }
+            }
+            successMessage.textContent = 'Login successful';
+        } else {
+            // For 401 we set "Invalid credentials" (tests expect this)
+            if (res.status === 401) {
+                errorMessage.textContent = 'Invalid credentials';
+            } else {
+                // Generic mapping for other errors
+                errorMessage.textContent = data.message || data.detail || 'Invalid credentials';
+            }
+        }
+    } catch (err) {
+        errorMessage.textContent = 'Network error: ' + err.message;
+    }
+});
+</script>
+</body>
+</html>

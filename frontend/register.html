@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+</head>
+<body>
+<h2>Register</h2>
+
+<form id="registerForm">
+    <input type="email" id="email" name="email" placeholder="Email" required>
+    <input type="password" id="password" name="password" placeholder="Password" required>
+    <button type="submit">Register</button>
+</form>
+
+<p id="success-message"></p>
+<p id="error-message"></p>
+
+<script>
+const form = document.getElementById('registerForm');
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    const successMessage = document.getElementById('success-message');
+    const errorMessage = document.getElementById('error-message');
+
+    successMessage.textContent = '';
+    errorMessage.textContent = '';
+
+    try {
+        const res = await fetch('http://localhost:8000/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        // try parsing JSON safely
+        let data = {};
+        try {
+            data = await res.json();
+        } catch (err) {
+            // non-json response
+            data = {};
+        }
+
+        if (res.ok) {
+            // Backend might return { "message": "..."} or { "access_token": "..." }
+            // For tests we set the exact text they expect:
+            successMessage.textContent = 'Registration successful';
+        } else {
+            // Map various backend error shapes to the message your tests expect
+            // e.g. { message: "..."} or { detail: "..." }
+            const serverMsg = data.message || data.detail || '';
+            // Tests expect "Error during registration"
+            errorMessage.textContent = 'Error during registration';
+            // (optionally log server message to console for debugging)
+            if (serverMsg) console.warn('Register error from server:', serverMsg);
+        }
+    } catch (err) {
+        errorMessage.textContent = 'Network error: ' + err.message;
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U testuser -d testdb"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DATABASE_URL: postgresql+psycopg2://testuser:testpass@localhost:5432/testdb
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install backend packages
+      working-directory: backend
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install psycopg2-binary
+
+    - name: Export PYTHONPATH
+      run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
+
+    - name: Wait for Postgres
+      run: |
+        for i in {1..30}; do
+          pg_isready -h localhost -p 5432 -U testuser && break
+          echo "Waiting for Postgres..."
+          sleep 1
+        done
+
+    - name: Start backend server
+      run: |
+        uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 &
+        echo "Waiting for backend to be ready..."
+        npx wait-on http://localhost:8000/health
+
+    - name: Reset database schema
+      working-directory: backend
+      run: |
+        python - << 'EOF'
+        from backend.app.database import Base, engine
+        import backend.app.models.user
+        Base.metadata.drop_all(bind=engine)
+        Base.metadata.create_all(bind=engine)
+        print("Database reset complete")
+        EOF
+
+
+    - name: Wait for backend
+      run: |
+        echo "Waiting for backend to be ready..."
+        for i in {1..30}; do
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health)
+          echo "Healthcheck STATUS: $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "Backend ready!"
+            break
+          fi
+          sleep 1
+        done
+        if [ "$STATUS" != "200" ]; then
+          echo "Backend failed to start!"
+          exit 1
+        fi
+
+    - name: Wait for API
+      run: |
+        for i in {1..20}; do
+          if curl -s http://localhost:8000; then
+            echo "API is up"
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "API failed to start"
+        exit 1
+    
+  
+    - name: List frontend files
+      working-directory: frontend
+      run: ls -R
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: "18"
+
+    - name: Install frontend dependencies
+      working-directory: frontend
+      run: npm install
+
+    - name: Install Playwright
+      working-directory: frontend
+      run: npx playwright install --with-deps chromium
+
+    - name: Run Playwright tests
+      working-directory: frontend
+      env:
+        BASE_URL: http://localhost:8000
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      run: npx playwright test
+
+    - name: Docker login
+      if: success()
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build Docker
+      if: success()
+      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/jwt-auth-app:latest backend
+
+    - name: Push Docker
+      if: success()
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/jwt-auth-app:latest
