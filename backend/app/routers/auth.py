@@ -21,15 +21,8 @@ def get_db():
 # -----------------------
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
-    if not hasattr(user_in, 'username') or not user_in.username:
+    if not user_in.username:
         user_in.username = user_in.email.split("@")[0]
-
-    # Password length validation
-    if len(user_in.password) < 6:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Error during registration"}
-        )
 
     existing = db.query(User).filter(User.email == user_in.email).first()
     if existing:

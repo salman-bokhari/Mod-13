@@ -45,12 +45,12 @@ app.include_router(auth_router.router)
 # ------------------------
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc: RequestValidationError):
-    # Always return 'Error during registration' to match Playwright tests
+    # Map Pydantic validation errors to a single message for Playwright tests
     return JSONResponse(
         status_code=400,
         content={"message": "Error during registration"}
     )
-    
+
 # ------------------------
 # Serve frontend correctly
 # ------------------------
@@ -58,7 +58,6 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 FRONTEND_DIR = ROOT_DIR / "frontend"
 
 if FRONTEND_DIR.exists():
-    # Serve frontend at root so fetch('/register') works correctly
     app.mount(
         "/",
         StaticFiles(directory=str(FRONTEND_DIR), html=True),
