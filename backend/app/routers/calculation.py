@@ -6,6 +6,7 @@ from backend.app.models.user import User
 from backend.app.schemas.calculation import CalculationCreate
 from backend.app.utils.jwt_handler import decode_token
 from fastapi.security import OAuth2PasswordBearer
+from backend.app.utils.jwt_handler import create_access_token, decode_access_token
 
 router = APIRouter(prefix="/calculations", tags=["calculations"])
 
