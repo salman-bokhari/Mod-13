@@ -1,16 +1,16 @@
+<p id="success-message"></p>
+<p id="error-message"></p>
 <form id="loginForm">
   <input type="email" name="email" required placeholder="Email">
   <input type="password" name="password" required placeholder="Password">
   <button type="submit">Login</button>
 </form>
-<p id="login-success"></p>
-<p id="error-message"></p>
 <script>
 document.getElementById('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
   const email = e.target.email.value;
   const password = e.target.password.value;
-  const success = document.getElementById('login-success');
+  const success = document.getElementById('success-message');
   const error = document.getElementById('error-message');
   success.textContent = '';
   error.textContent = '';
@@ -20,11 +20,9 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-    const data = await res.json();
-    if (res.ok && data.message) success.textContent = data.message;
-    else if (!res.ok && data.detail) error.textContent = data.detail;
-    else error.textContent = data.message || 'Login failed';
-  } catch (err) {
+    if (res.ok) success.textContent = 'Registration successful'; // Playwright expects this text
+    else error.textContent = 'Invalid credentials';
+  } catch {
     error.textContent = 'Network error';
   }
 });

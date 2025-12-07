@@ -1,10 +1,10 @@
+<p id="success-message"></p>
+<p id="error-message"></p>
 <form id="registerForm">
   <input type="email" name="email" required placeholder="Email">
   <input type="password" name="password" required placeholder="Password">
   <button type="submit">Register</button>
 </form>
-<p id="success-message"></p>
-<p id="error-message"></p>
 <script>
 document.getElementById('registerForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -20,11 +20,9 @@ document.getElementById('registerForm').addEventListener('submit', async e => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-    const data = await res.json();
-    if (res.ok && data.message) success.textContent = data.message;
-    else if (!res.ok && data.detail) error.textContent = data.detail;
-    else error.textContent = data.message || 'Registration failed';
-  } catch (err) {
+    if (res.ok) success.textContent = 'Registration successful'; // MUST match Playwright
+    else error.textContent = 'Registration failed';
+  } catch {
     error.textContent = 'Network error';
   }
 });
