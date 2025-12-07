@@ -31,19 +31,19 @@ form.addEventListener('submit', async (e) => {
     errorMessage.textContent = '';
 
     try {
-        const res = await fetch('/login', { // use relative URL
+        const res = await fetch('/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
 
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
 
         if (res.ok) {
-            successMessage.textContent = data.message || 'Login successful';
             if (data.access_token) localStorage.setItem('access_token', data.access_token);
+            successMessage.textContent = 'Login successful';
         } else {
-            errorMessage.textContent = data.message || 'Invalid credentials';
+            errorMessage.textContent = res.status === 401 ? 'Invalid credentials' : (data.message || 'Invalid credentials');
         }
     } catch (err) {
         errorMessage.textContent = 'Network error: ' + err.message;

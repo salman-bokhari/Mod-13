@@ -31,16 +31,16 @@ form.addEventListener('submit', async (e) => {
     errorMessage.textContent = '';
 
     try {
-        const res = await fetch('/register', { // use relative URL
+        const res = await fetch('/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
 
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
 
         if (res.ok) {
-            successMessage.textContent = data.message || 'Registration successful';
+            successMessage.textContent = 'Registration successful';
         } else {
             errorMessage.textContent = data.message || 'Error during registration';
         }
