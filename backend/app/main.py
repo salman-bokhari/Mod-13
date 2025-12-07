@@ -4,14 +4,18 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from backend.app.routers import auth as auth_router
+from backend.app.routers.auth import router as auth_router
+from backend.app.routers.calculation import router as calculation_router
 from backend.app import database
-from backend.app.routers import calculation as calculation_router
 
-app.include_router(calculation_router.router)
-
+# Create the FastAPI instance first
 app = FastAPI(title="JWT Auth Example")
 
+# Include routers
+app.include_router(auth_router)
+app.include_router(calculation_router)
+
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,16 +24,17 @@ app.add_middleware(
     allow_credentials=True,
 )
 
+# Startup event
 @app.on_event("startup")
 def on_startup():
     database.init_db()
 
+# Health endpoint
 @app.api_route("/health", methods=["GET", "HEAD"])
 def health():
     return {"status": "ok"}
 
-app.include_router(auth_router.router)
-
+# Validation error handler
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc: RequestValidationError):
     return JSONResponse(
@@ -37,6 +42,7 @@ async def validation_exception_handler(request, exc: RequestValidationError):
         content={"message": "Error during registration"}
     )
 
+# Mount frontend static files if directory exists
 ROOT_DIR = Path(__file__).resolve().parents[2]
 FRONTEND_DIR = ROOT_DIR / "frontend"
 if FRONTEND_DIR.exists():
