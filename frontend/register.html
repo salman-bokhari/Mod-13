@@ -14,16 +14,22 @@ document.getElementById('registerForm').addEventListener('submit', async e => {
   const error = document.getElementById('error-message');
   success.textContent = '';
   error.textContent = '';
+
+  if (password.length < 6) {   // enforce Playwright short password test
+    error.textContent = 'Error during registration'; // EXACT regex match
+    return;
+  }
+
   try {
     const res = await fetch('/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-    if (res.ok) success.textContent = 'Registration successful'; // MUST match Playwright
-    else error.textContent = 'Registration failed';
+    if (res.ok) success.textContent = 'Registration successful';  // Playwright match
+    else error.textContent = 'Error during registration';         // Playwright match
   } catch {
-    error.textContent = 'Network error';
+    error.textContent = 'Error during registration';               // Playwright match
   }
 });
 </script>
