@@ -4,7 +4,7 @@ from typing import List
 from backend.app.database import get_db
 from backend.app.models.calculation import Calculation
 from backend.app.schemas.calculation import CalculationCreate, CalculationRead, CalculationUpdate
-from backend.app.auth import get_current_user
+from backend.app.routers.auth import get_current_user
 from backend.app.models.user import User
 
 router = APIRouter(prefix="/calculations", tags=["calculations"])
