@@ -6,6 +6,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from backend.app.routers import auth as auth_router
 from backend.app import database
+from backend.app.routers import calculation as calculation_router
+
+app.include_router(calculation_router.router)
 
 app = FastAPI(title="JWT Auth Example")
 

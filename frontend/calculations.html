@@ -1,0 +1,54 @@
+<h1>Calculations</h1>
+
+<form id="add-form">
+  <input name="operand1" placeholder="Operand 1" type="number" required>
+  <input name="operand2" placeholder="Operand 2" type="number" required>
+  <select name="operation">
+    <option value="add">Add</option>
+    <option value="subtract">Subtract</option>
+    <option value="multiply">Multiply</option>
+    <option value="divide">Divide</option>
+  </select>
+  <button type="submit">Add Calculation</button>
+</form>
+
+<div id="message"></div>
+<ul id="calc-list"></ul>
+
+<script>
+async function fetchCalculations() {
+  const res = await fetch('/calculations', {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('jwt')}` }
+  });
+  const data = await res.json();
+  const list = document.getElementById('calc-list');
+  list.innerHTML = '';
+  data.forEach(c => {
+    const li = document.createElement('li');
+    li.textContent = `${c.operand1} ${c.operation} ${c.operand2} = ${c.result}`;
+    list.appendChild(li);
+  });
+}
+document.getElementById('add-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const form = e.target;
+  const payload = {
+    operand1: parseFloat(form.operand1.value),
+    operand2: parseFloat(form.operand2.value),
+    operation: form.operation.value
+  };
+  const res = await fetch('/calculations', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+    },
+    body: JSON.stringify(payload)
+  });
+  const result = await res.json();
+  document.getElementById('message').textContent = res.ok ? 'Calculation added!' : `Error: ${result.detail}`;
+  fetchCalculations();
+});
+fetchCalculations();
+</script>
+
