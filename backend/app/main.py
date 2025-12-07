@@ -12,8 +12,8 @@ from backend.app import database
 app = FastAPI(title="JWT Auth Example")
 
 # Include routers
-app.include_router(auth_router)
-app.include_router(calculation_router)
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(calculation_router, prefix="/calculations", tags=["calculations"])
 
 # CORS middleware
 app.add_middleware(
@@ -24,7 +24,7 @@ app.add_middleware(
     allow_credentials=True,
 )
 
-# Startup event
+# Startup event to initialize database
 @app.on_event("startup")
 def on_startup():
     database.init_db()
@@ -39,7 +39,7 @@ def health():
 async def validation_exception_handler(request, exc: RequestValidationError):
     return JSONResponse(
         status_code=400,
-        content={"message": "Error during registration"}
+        content={"message": "Validation error", "details": exc.errors()}
     )
 
 # Mount frontend static files if directory exists
