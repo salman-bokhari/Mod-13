@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from backend.app.database import get_db
 from backend.app.models.calculation import Calculation
 from backend.app.models.user import User
-from backend.app.auth import get_current_user
+from backend.app.routers.auth import get_current_user
 
 router = APIRouter(prefix="/calculations", tags=["calculations"])
 
