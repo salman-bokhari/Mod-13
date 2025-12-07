@@ -4,7 +4,6 @@ from backend.app.database import get_db
 from backend.app.models.calculation import Calculation
 from backend.app.models.user import User
 from backend.app.schemas.calculation import CalculationCreate
-from backend.app.utils.jwt_handler import decode_token
 from fastapi.security import OAuth2PasswordBearer
 from backend.app.utils.jwt_handler import create_access_token, decode_access_token
 
@@ -15,7 +14,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 # ---- Auth Dependency ----
 def get_current_user(token: str = Depends(oauth2_scheme),
                      db: Session = Depends(get_db)) -> User:
-    payload = decode_token(token)
+    payload = decode_access_token(token)
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
 
