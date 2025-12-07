@@ -30,3 +30,14 @@ def login(user: UserCreate):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     token = create_access_token({"sub": str(db_user.id)})
     return {"access_token": token, "token_type": "bearer", "message": "Login successful"}
+
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    payload = decode_access_token(token)
+    user_id = payload.get("sub")
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    db = SessionLocal()
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    return user
