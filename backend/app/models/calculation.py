@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
-from backend.app.auth import get_current_user
-
+from backend.app.routers.auth import get_current_user
 
 class Calculation(Base):
     __tablename__ = "calculations"
