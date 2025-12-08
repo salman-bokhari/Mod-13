@@ -21,8 +21,8 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-    if (res.ok) success.textContent = 'Registration successful'; // Playwright expects this text
-    else error.textContent = 'Invalid credentials';               // optional for wrong password test
+    if (res.ok) success.textContent = 'Registration successful'; 
+    else error.textContent = 'Invalid credentials';              
   } catch {
     error.textContent = 'Invalid credentials';
   }
