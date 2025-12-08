@@ -61,16 +61,16 @@ jobs:
         nohup uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 > backend.log 2>&1 &
         npx wait-on http://localhost:8000/health --timeout 20000
 
-    - name: Reset database schema
-      working-directory: backend
-      run: |
-        python - << 'EOF'
-        from backend.app.database import Base, engine
-        import backend.app.models.user
-        Base.metadata.drop_all(bind=engine)
-        Base.metadata.create_all(bind=engine)
-        print("Database reset complete")
-        EOF
+    # - name: Reset database schema
+    #   working-directory: backend
+    #   run: |
+    #     python - << 'EOF'
+    #     from backend.app.database import Base, engine
+    #     import backend.app.models.user
+    #     Base.metadata.drop_all(bind=engine)
+    #     Base.metadata.create_all(bind=engine)
+    #     print("Database reset complete")
+    #     EOF
 
     - name: Wait for backend
       run: |
