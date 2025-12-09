@@ -1,7 +1,9 @@
 from pydantic import BaseModel, EmailStr
+from typing import Optional
 
 class UserCreate(BaseModel):
-    email: EmailStr
+    username: Optional[str]
+    email: EmailStr   # <-- add this
     password: str
 
 class Token(BaseModel):

@@ -1,3 +1,5 @@
+# backend/app/database.py
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -29,6 +31,8 @@ def get_db():
 
 # Initialize DB tables
 def init_db():
+    # Import models here to register them with Base
     from backend.app.models.user import User
-    from backend.app.models.calculation import Calculation  # include calculation model
+    from backend.app.models.calculation import Calculation
+
     Base.metadata.create_all(bind=engine)

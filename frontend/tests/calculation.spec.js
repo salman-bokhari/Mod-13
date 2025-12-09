@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const baseURL = process.env.BASE_URL || 'http://127.0.0.1:8000';
+const baseURL = process.env.BASE_URL || 'http://localhost:8000';
 
 test('BREAD calculations', async ({ request }) => {
   // 1. Register & login via API

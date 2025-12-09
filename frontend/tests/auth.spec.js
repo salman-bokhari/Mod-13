@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 const timestamp = Date.now();
 const testUser = { email: `test${timestamp}@example.com`, password: 'Password123' };
 const shortPassUser = { email: `short${timestamp}@example.com`, password: '123' };
-const baseURL = process.env.BASE_URL || 'http://127.0.0.1:8000';
+const baseURL = process.env.BASE_URL || 'http://localhost:8000';
 
 test('Register with short password shows error', async ({ page }) => {
   await page.goto(`${baseURL}/register.html`);
