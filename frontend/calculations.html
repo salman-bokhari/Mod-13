@@ -16,19 +16,27 @@
 <ul id="calc-list"></ul>
 
 <script>
+const token = localStorage.getItem('token');
+
 async function fetchCalculations() {
-  const res = await fetch('/calculations', {
-    headers: { 'Authorization': `Bearer ${localStorage.getItem('jwt')}` }
-  });
-  const data = await res.json();
-  const list = document.getElementById('calc-list');
-  list.innerHTML = '';
-  data.forEach(c => {
-    const li = document.createElement('li');
-    li.textContent = `${c.operand1} ${c.operation} ${c.operand2} = ${c.result}`;
-    list.appendChild(li);
-  });
+  try {
+    const res = await fetch('/calculations', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Failed to fetch calculations');
+    const data = await res.json();
+    const list = document.getElementById('calc-list');
+    list.innerHTML = '';
+    data.forEach(c => {
+      const li = document.createElement('li');
+      li.textContent = `${c.operand1} ${c.operation} ${c.operand2} = ${c.result}`;
+      list.appendChild(li);
+    });
+  } catch (err) {
+    document.getElementById('message').textContent = 'Error fetching calculations';
+  }
 }
+
 document.getElementById('add-form').addEventListener('submit', async e => {
   e.preventDefault();
   const form = e.target;
@@ -37,18 +45,28 @@ document.getElementById('add-form').addEventListener('submit', async e => {
     operand2: parseFloat(form.operand2.value),
     operation: form.operation.value
   };
-  const res = await fetch('/calculations', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('jwt')}`
-    },
-    body: JSON.stringify(payload)
-  });
-  const result = await res.json();
-  document.getElementById('message').textContent = res.ok ? 'Calculation added!' : `Error: ${result.detail}`;
-  fetchCalculations();
+
+  try {
+    const res = await fetch('/calculations/', { // POST route requires trailing slash
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (res.ok) {
+      document.getElementById('message').textContent = 'Calculation added!';
+      fetchCalculations(); // refresh list
+    } else {
+      document.getElementById('message').textContent = `Error: ${result.detail || 'Unknown error'}`;
+    }
+  } catch (err) {
+    document.getElementById('message').textContent = 'Error adding calculation';
+  }
 });
+
+// Load calculations on page load
 fetchCalculations();
 </script>
-

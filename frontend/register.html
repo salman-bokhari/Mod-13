@@ -15,21 +15,26 @@ document.getElementById('registerForm').addEventListener('submit', async e => {
   success.textContent = '';
   error.textContent = '';
 
-  if (password.length < 6) {   // enforce Playwright short password test
-    error.textContent = 'Error during registration'; // EXACT regex match
+  if (password.length < 6) {
+    error.textContent = 'Error during registration';
     return;
   }
 
   try {
-    const res = await fetch('/register', {
+    const res = await fetch('/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-    if (res.ok) success.textContent = 'Registration successful';  // Playwright match
-    else error.textContent = 'Error during registration';         // Playwright match
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem('token', data.access_token); // save JWT
+      success.textContent = 'Registration successful';
+    } else {
+      error.textContent = 'Error during registration';
+    }
   } catch {
-    error.textContent = 'Error during registration';               // Playwright match
+    error.textContent = 'Error during registration';
   }
 });
 </script>

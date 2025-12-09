@@ -16,13 +16,18 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
   error.textContent = '';
 
   try {
-    const res = await fetch('/login', {
+    const res = await fetch('/auth/login', {   // fixed URL
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-    if (res.ok) success.textContent = 'Registration successful'; 
-    else error.textContent = 'Invalid credentials';              
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem('token', data.access_token);  // save JWT
+      success.textContent = 'Login successful';
+    } else {
+      error.textContent = 'Invalid credentials';
+    }
   } catch {
     error.textContent = 'Invalid credentials';
   }

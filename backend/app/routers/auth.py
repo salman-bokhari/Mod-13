@@ -5,6 +5,9 @@ from backend.app.utils.hash import get_password_hash, verify_password
 from backend.app.database import SessionLocal
 from backend.app.models.user import User
 from backend.app.utils.jwt_handler import create_access_token, decode_access_token
+from backend.app.database import get_db  # <-- add this line
+from sqlalchemy.orm import Session
+
 
 router = APIRouter(tags=["auth"])
 
@@ -36,13 +39,19 @@ def login(user: UserCreate):
     return {"access_token": token, "token_type": "bearer", "message": "Login successful"}
 
 # Dependency to get current user from JWT token
-def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
     payload = decode_access_token(token)
     user_id = payload.get("sub")
     if user_id is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    db = SessionLocal()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Invalid credentials"
+        )
+
     user = db.query(User).filter(User.id == int(user_id)).first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="User not found"
+        )
     return user
