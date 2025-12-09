@@ -3,18 +3,18 @@ import { test } from '@playwright/test';
 const baseURL = process.env.BASE_URL || 'http://localhost:8000';
 
 test('BREAD calculations soft-fail', async ({ request }) => {
-  const softExpect = async (fn: () => Promise<void>, stepName: string) => {
+  const softExpect = async (fn, stepName) => {
     try {
       await fn();
       console.log(`✅ ${stepName} passed`);
     } catch (e) {
-      console.warn(`⚠️ ${stepName} failed, but workflow continues`, e);
+      console.warn(`⚠️ ${stepName} failed, but workflow continues`, e.message);
     }
   };
 
   let token = '';
   let headers = {};
-  let calc: any = {};
+  let calc = {};
 
   // 1. Register & login
   await softExpect(async () => {
@@ -52,6 +52,7 @@ test('BREAD calculations soft-fail', async ({ request }) => {
 
   // 4. Edit calculation
   await softExpect(async () => {
+    if (!calc.id) throw new Error('No calculation to edit');
     const res = await request.put(`${baseURL}/calculations/${calc.id}`, {
       data: { operand2: 4 },
       headers
@@ -62,6 +63,7 @@ test('BREAD calculations soft-fail', async ({ request }) => {
 
   // 5. Delete calculation
   await softExpect(async () => {
+    if (!calc.id) throw new Error('No calculation to delete');
     const res = await request.delete(`${baseURL}/calculations/${calc.id}`, { headers });
     if (!res.ok()) throw new Error('Delete calculation failed');
   }, 'Delete Calculation');
