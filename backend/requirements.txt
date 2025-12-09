@@ -6,3 +6,4 @@ passlib[bcrypt]==1.7.4
 PyJWT==2.8.0
 python-multipart==0.0.6
 email-validator
+psycopg2-binary
